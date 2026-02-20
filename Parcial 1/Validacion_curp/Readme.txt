@@ -1,0 +1,3 @@
+En este proyecto puedes encontrar un programa en c++ donde se valida a
+través de lenguaje formal donde al principio s establecen los 3 patrones para reconocer el CURP, INE, RFC, par después pedir la cadena de caracteres y validarlo si es valido creara un archivo.txt donde se 
+muestre cada campo valido con la leyendo "Valido" o "No valido" según sea el caso, para ejecutar el archivo se debe generar un archivo.txt dentro de la carpeta donde se encuentra el programa con el nombre "campos.txt"
