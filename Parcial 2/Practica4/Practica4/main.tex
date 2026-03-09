@@ -1,0 +1,469 @@
+\documentclass[12pt]{article}
+
+% ---------------- PAQUETES ----------------
+\usepackage[spanish]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage[pages=some]{background}
+
+% ---------------- CONFIGURACIÓN ----------------
+\geometry{top=1in, bottom=1in, right=1in, left=1in}
+\setlength{\parindent}{0pt}
+\pagestyle{empty}
+
+\definecolor{rojo}{rgb}{0.8,0,0}
+
+\titleformat{\section}
+{\color{rojo}\Large\bfseries}
+{\thesection}{1em}{}
+
+\titleformat{\subsection}
+{\color{rojo}\large\bfseries}
+{\thesubsection}{1em}{}
+
+
+\lstset{
+language=C++,
+basicstyle=\ttfamily\small,
+keywordstyle=\color{blue},
+commentstyle=\color{gray},
+numbers=left,
+numberstyle=\tiny,
+frame=single,
+breaklines=true
+}
+
+\begin{document}
+
+
+\begin{titlepage}
+
+\backgroundsetup{
+scale=1,
+opacity=1,
+angle=0,
+contents={\includegraphics[width=\paperwidth,height=\paperheight]{Imagenes/icbi-c.jpg}}
+}
+\BgThispage
+
+\vspace*{9cm}
+
+\begin{center}
+
+{\fontsize{30pt}{32pt}\selectfont\color{rojo}\textbf{REPORTE DE PRÁCTICA NO. 4}} \\[1.5cm]
+
+{\fontsize{18pt}{20pt}\selectfont\color{rojo}\textbf{CONSTRUCCIÓN DE AUTÓMATA FINITO DETERMINISTA}} \\[1.5cm]
+
+{\fontsize{14pt}{16pt}\selectfont\color{rojo}\textbf{ALUMNO: Navarrete Torres Oscar}}
+
+\end{center}
+
+\end{titlepage}
+
+%------------------------------------------------
+
+\section{Introducción}
+
+En el campo de la Teoría de la Computación, los Autómatas Finitos Deterministas (AFD) constituyen modelos matemáticos fundamentales utilizados para el reconocimiento de lenguajes formales y la identificación de patrones dentro de cadenas de caracteres.
+
+Un AFD procesa secuencias de símbolos pertenecientes a un alfabeto definido y, mediante una serie de transiciones entre estados, determina si una cadena pertenece o no al lenguaje reconocido por el autómata.
+
+El presente trabajo describe el desarrollo de un simulador de Autómata Finito Determinista implementado en el lenguaje de programación C++. El programa recibe como entrada la definición completa del autómata, incluyendo el conjunto de estados, el alfabeto, las transiciones, el estado inicial y los estados de aceptación, así como un conjunto de cadenas que deben ser evaluadas.
+
+Posteriormente, el sistema procesa cada cadena utilizando la función de transición del autómata y determina si esta es aceptada o rechazada. Con el propósito de mejorar el rendimiento del programa, las transiciones del autómata se almacenan mediante una tabla de transición implementada con matrices, lo que permite acceder a cada transición en tiempo constante.
+
+\newpage
+
+%------------------------------------------------
+
+\section{Marco teórico}
+
+Un Autómata Finito Determinista (AFD) es un modelo formal utilizado para describir sistemas que procesan secuencias de símbolos pertenecientes a un alfabeto finito. Formalmente, un AFD se define como una 5-tupla:
+
+\[
+AFD = (Q, \Sigma, \delta, q_0, F)
+\]
+
+donde:
+
+\begin{itemize}
+\item $Q$: conjunto finito de estados.
+\item $\Sigma$: alfabeto de símbolos de entrada.
+\item $\delta$: función de transición que define el cambio de estados.
+\item $q_0$: estado inicial del autómata.
+\item $F$: conjunto de estados finales o de aceptación.
+\end{itemize}
+
+La función de transición se define formalmente como:
+
+\[
+\delta : Q \times \Sigma \rightarrow Q
+\]
+
+lo que significa que para cada combinación de estado actual y símbolo de entrada existe exactamente un estado siguiente.
+
+El funcionamiento de un AFD consiste en iniciar en el estado inicial y procesar la cadena de entrada símbolo por símbolo, aplicando la función de transición correspondiente. Una vez que todos los símbolos han sido procesados, si el estado final alcanzado pertenece al conjunto de estados de aceptación, la cadena es aceptada; en caso contrario, es rechazada.
+%------------------------------------------------
+
+\section{Objetivos}
+
+\subsection{Objetivo general}
+
+Desarrollar un programa en C++ que simule el funcionamiento de un Autómata Finito Determinista.
+
+\subsection{Objetivos específicos}
+
+\begin{itemize}
+
+\item Implementar la estructura de un AFD en un programa.
+\item Leer la definición del autómata desde la entrada estándar.
+\item Procesar múltiples cadenas de entrada.
+\item Determinar si las cadenas son aceptadas o rechazadas.
+\item Analizar la eficiencia temporal y espacial del algoritmo.
+
+\end{itemize}
+
+\newpage
+
+%------------------------------------------------
+
+\section{Desarrollo}
+
+\subsubsection{Entrada}
+
+La entrada del programa sigue la siguiente estructura:
+
+\begin{itemize}
+
+\item \textbf{Primera línea}
+
+Contiene seis enteros:
+
+\[
+N\; S\; D\; q_0\; T\; C
+\]
+
+donde:
+
+\begin{itemize}
+
+\item $N$ : número de estados del autómata ($|Q|$)
+\item $S$ : tamaño del alfabeto ($|\Sigma|$)
+\item $D$ : número de transiciones del autómata
+\item $q_0$ : estado inicial
+\item $T$ : número de estados de aceptación ($|F|$)
+\item $C$ : número de cadenas que se evaluarán
+
+\end{itemize}
+
+Los valores cumplen las siguientes restricciones:
+
+\[
+1 \leq N,S,C \leq 100, \quad 1 \leq D \leq 100, \quad 1 \leq q_0 \leq N, \quad 0 \leq T \leq N
+\]
+
+Cada estado $q \in Q$ se identifica mediante un número entero entre $1$ y $N$.
+
+\item \textbf{Segunda línea}
+
+Contiene el alfabeto $\Sigma$, representado por una secuencia de $S$ símbolos separados por espacios.  
+
+Cada símbolo puede ser:
+
+\begin{itemize}
+\item una letra,
+\item un dígito,
+\item o cualquier carácter ASCII distinto del espacio.
+\end{itemize}
+
+\item \textbf{Tercera línea}
+
+Contiene el conjunto de estados de aceptación $F$, representado por $T$ enteros:
+
+\[
+t_1, t_2, ..., t_T
+\]
+
+donde cada $t_i$ satisface:
+
+\[
+1 \leq t_i \leq N
+\]
+
+\item \textbf{Transiciones del autómata}
+
+Las siguientes $D$ líneas describen las transiciones del autómata.  
+Cada línea tiene el formato:
+
+\begin{verbatim}
+I X J
+\end{verbatim}
+
+lo cual representa la transición:
+
+\[
+\delta(I, X) = J
+\]
+
+donde:
+
+\begin{itemize}
+
+\item $I$ es el estado de origen
+\item $X$ es el símbolo de entrada
+\item $J$ es el estado destino
+
+\end{itemize}
+
+\item \textbf{Cadenas de entrada}
+
+Finalmente, las siguientes $C$ líneas contienen las cadenas $W$ que serán evaluadas por el autómata.  
+
+Cada cadena está formada únicamente por símbolos pertenecientes al alfabeto $\Sigma$, y su longitud está en el rango:
+
+\[
+0 \leq |W| \leq 100
+\]
+
+\end{itemize}
+
+\subsubsection{Salida}
+
+Para cada una de las $C$ cadenas $W$, el programa debe imprimir uno de los siguientes mensajes:
+
+\begin{itemize}
+
+\item \textbf{ACEPTADA} — si el autómata $M$ acepta la cadena $W$.
+\item \textbf{RECHAZADA} — si el autómata $M$ no acepta la cadena $W$.
+
+\end{itemize}
+
+\subsection{Implementación}
+
+El programa fue implementado en el lenguaje de programación C++ utilizando estructuras de datos de la biblioteca estándar.
+
+Para representar el autómata se utilizaron:
+
+\begin{itemize}
+
+\item \textbf{vector}: para almacenar el alfabeto y las cadenas de entrada.
+\item \textbf{set}: para almacenar el conjunto de estados de aceptación.
+\item \textbf{matriz de transición}: para representar las transiciones del autómata.
+
+\end{itemize}
+
+\end{itemize}
+
+El uso de una matriz para representar las transiciones permite acceder a ellas en tiempo constante, lo cual mejora la eficiencia del algoritmo.
+
+\subsection{Funcionamiento del programa}
+
+El programa se ejecuta en las siguientes etapas:
+
+\begin{enumerate}
+
+\item Lectura de los parámetros del autómata.
+
+Se leen los valores:
+
+\begin{verbatim}
+N S D q0 T C
+\end{verbatim}
+
+donde:
+
+\begin{itemize}
+
+\item N = número de estados
+\item S = tamaño del alfabeto
+\item D = número de transiciones
+\item q0 = estado inicial
+\item T = número de estados finales
+\item C = número de cadenas
+
+\end{itemize}
+
+\item Lectura del alfabeto.
+
+Los símbolos del alfabeto se almacenan en un vector y se asigna un índice a cada símbolo.
+
+\item Creación de la tabla de transición.
+
+Se crea una matriz bidimensional:
+
+\[
+transicion[N][S]
+\]
+
+donde cada celda almacena el estado siguiente.
+
+\item Lectura de estados finales.
+
+Los estados finales se almacenan en un conjunto:
+
+\texttt{set<int> finales}
+
+\item Lectura de transiciones.
+
+Cada transición tiene la forma:
+
+\begin{verbatim}
+estado_origen simbolo estado_destino
+\end{verbatim}
+
+Estas transiciones se almacenan en la tabla de transición.
+
+\item Procesamiento de cadenas.
+
+Cada cadena se procesa símbolo por símbolo consultando la tabla de transición.
+
+\item Verificación de aceptación.
+
+Si el estado final pertenece al conjunto de estados finales, la cadena es aceptada.
+
+\end{enumerate}
+
+\subsection{Código del programa}
+
+\begin{lstlisting}
+#include <iostream>
+#include <vector>
+#include <set>
+
+using namespace std;
+
+int main(){
+
+int N,S,D,q0,T,C;
+cin>>N>>S>>D>>q0>>T>>C;
+
+vector<char> alfabeto(S);
+for(int i=0;i<S;i++)
+cin>>alfabeto[i];
+
+vector<vector<int>> transicion(N,vector<int>(S));
+
+set<int> finales;
+
+for(int i=0;i<T;i++){
+int x;
+cin>>x;
+finales.insert(x);
+}
+
+for(int i=0;i<D;i++){
+int I,J;
+char X;
+cin>>I>>X>>J;
+
+int col=X-'0';
+transicion[I][col]=J;
+}
+
+vector<string> cadenas(C);
+
+for(int i=0;i<C;i++)
+cin>>cadenas[i];
+
+for(string cadena:cadenas){
+
+int estado=q0;
+
+for(char simbolo:cadena){
+int col=simbolo-'0';
+estado=transicion[estado][col];
+}
+
+if(finales.count(estado))
+cout<<cadena<<" ACEPTADA"<<endl;
+else
+cout<<cadena<<" RECHAZADA"<<endl;
+
+}
+
+}
+\end{lstlisting}
+
+\newpage
+
+%------------------------------------------------
+
+\subsection{Análisis de eficiencia}
+
+La complejidad temporal del algoritmo es:
+
+\[
+O(C \times L)
+\]
+
+donde:
+
+\begin{itemize}
+
+\item $C$ = número de cadenas
+\item $L$ = longitud promedio de cada cadena
+
+\end{itemize}
+
+Cada símbolo de la cadena requiere una consulta en la tabla de transición, la cual se realiza en tiempo constante:
+
+\[
+O(1)
+\]
+
+La complejidad espacial del programa es:
+
+\[
+O(N \times S + C \times L)
+\]
+
+Esto corresponde al almacenamiento de la tabla de transición y las cadenas de entrada.
+
+\section{Resultados}
+
+Entrada de ejemplo:
+
+\begin{verbatim}
+3 2 6 1 1 4
+0 1
+2
+1 0 1
+1 1 2
+2 0 3
+2 1 2
+3 0 2
+3 1 2
+101
+0
+11
+1000100001
+\end{verbatim}
+
+Salida:
+
+\begin{verbatim}
+101 ACEPTADA
+0 RECHAZADA
+11 ACEPTADA
+1000100001 ACEPTADA
+\end{verbatim}
+
+\newpage
+
+\section{Conclusiones}
+
+El desarrollo de este programa permitió comprender de manera práctica el funcionamiento de los Autómatas Finitos Deterministas.
+
+La implementación mediante una tabla de transición basada en matrices permite acceder directamente a las transiciones
+
+\section*{Bibliografía}
+
+Torres-Pérez, A., Cornejo-Velázquez, E., \& Clavel-Maqueda, M. (2026). Design of a recursive algorithm for DFA implementation: computational complexity analysis. International Journal of Combinatorial Optimization Problems and Informatics, 17(1), 299–306.
+
+\end{document}

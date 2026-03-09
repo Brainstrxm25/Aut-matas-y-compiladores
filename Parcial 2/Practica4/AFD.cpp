@@ -1,54 +1,54 @@
 #include <iostream>
-#include <map>
 #include <vector>
 #include <set>
 using namespace std;
 
-int main() {
+int main(){
 
-    int N, S, D, q0, T, C;
-    vector<string> cadenas(C);
-    vector<char> alfabeto(S);
-    map<pair<int,char>, int> transicion;
-    set<int> finales;
+int N,S,D,q0,T,C;
+cin>>N>>S>>D>>q0>>T>>C;
 
-    cin >> N >> S >> D >> q0 >> T >> C;
-    
-    for(int i = 0; i < S; i++)
-        cin >> alfabeto[i];
+vector<char> alfabeto(S);
+for(int i=0;i<S;i++)
+cin>>alfabeto[i];
 
-    for(int i = 0; i < T; i++){
-        int x;
-        cin >> x;
-        finales.insert(x);
-    }
+vector<vector<int>> transicion(N,vector<int>(S));
 
-    for(int i = 0; i < D; i++){
-        int I, J;
-        char X;
+set<int> finales;
 
-        cin >> I >> X >> J;
+for(int i=0;i<T;i++){
+int x;
+cin>>x;
+finales.insert(x);
+}
 
-        transicion[{I,X}] = J;
-    }
+for(int i=0;i<D;i++){
+int I,J;
+char X;
+cin>>I>>X>>J;
 
+int col=X-'0';
+transicion[I][col]=J;
+}
 
-    for(int i = 0; i < C; i++){
-        cin >> cadenas[i];
-    }
+vector<string> cadenas(C);
 
-    for(string cadena : cadenas){
+for(int i=0;i<C;i++)
+cin>>cadenas[i];
 
-        int estado = q0;
+for(string cadena:cadenas){
 
-        for(char simbolo : cadena){
-            estado = transicion[{estado,simbolo}];
-        }
+int estado=q0;
 
-        if(finales.count(estado))
-            cout << cadena << " ACEPTADA" << endl;
-        else
-            cout << cadena << " RECHAZADA" << endl;
-    }
+for(char simbolo:cadena){
+int col=simbolo-'0';
+estado=transicion[estado][col];
+}
 
+if(finales.count(estado))
+cout<<cadena<<" ACEPTADA"<<endl;
+else
+cout<<cadena<<" RECHAZADA"<<endl;
+
+}
 }
