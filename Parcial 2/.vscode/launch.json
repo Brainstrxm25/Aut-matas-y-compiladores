@@ -2,6 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "JavaLexer",
+            "request": "launch",
+            "mainClass": "JavaLexer",
+            "projectName": "JavaLexerProject"
+        },
+        {
+            "type": "java",
+            "name": "JavaLexer",
+            "request": "launch",
+            "mainClass": "JavaLexer",
+            "projectName": "Parcial 2_a88215fb"
+        },
+        {
             "type": "java+",
             "request": "launch",
             "name": "Launch Java App"
