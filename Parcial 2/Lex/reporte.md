@@ -1,4 +1,4 @@
-# C/C++ Lexer con Arquitectura SOLID (Proyecto)
+# C++ Lexer 
 
 > **Materia:** Autómatas y Compiladores  
 > **Proyecto:** Analizador Léxico en Flex/C con Inyección de Dependencias  
