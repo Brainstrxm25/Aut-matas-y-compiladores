@@ -1,0 +1,125 @@
+%option noyywrap
+%{
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+typedef enum {
+    T_KEYWORD, T_IDENTIFIER, T_OPERATOR, T_SEPARATOR,
+    T_FLOATLIT, T_HEXLIT, T_BINLIT, T_OCTALLIT, T_INTLIT,
+    T_STRINGLIT, T_CHARLIT, T_BLOCKCOMMENT, T_LINECOMMENT, T_ERROR
+} TokenType;
+
+const char* type_names[] = {
+    "RESERVADA", "IDENTIFICADOR", "OPERADOR", "SEPARADOR",
+    "FLOTANTE", "HEXADECIMAL", "BINARIO", "OCTAL", "ENTERO",
+    "CADENA", "CARACTER", "COMENT_BLOQUE", "COMENT_LINEA", "ERROR"
+};
+
+int line_num = 1;
+int col_num = 1;
+
+typedef void (*TokenProcessor)(TokenType type, const char* lexeme, int line, int col, void* context);
+
+TokenProcessor current_processor = NULL;
+void* processor_context = NULL;
+void dispatch_token(TokenType type, const char* lexeme) {
+    if (current_processor != NULL) {
+        current_processor(type, lexeme, line_num, col_num, processor_context);
+    }
+    col_num += strlen(lexeme);
+}
+
+void file_token_processor(TokenType type, const char* lexeme, int line, int col, void* context) {
+    FILE* out = (FILE*)context;
+    fprintf(out, "%-15s | %-20s | L:%-3d | C:%-3d\n", type_names[type], lexeme, line, col);
+}
+
+%}
+
+DIGIT       [0-9]
+LETTER      [a-zA-Z_]
+HEX         [0-9a-fA-F]
+
+KEYWORD     (alignas|alignof|and|and_eq|asm|auto|bitand|bitor|bool|break|case|catch|char|class|compl|concept|const|constexpr|continue|decltype|default|delete|do|double|dynamic_cast|else|enum|explicit|export|extern|false|float|for|friend|goto|if|inline|int|long|mutable|namespace|new|noexcept|not|not_eq|nullptr|operator|or|or_eq|private|protected|public|register|reinterpret_cast|requires|return|short|signed|sizeof|static|static_assert|static_cast|struct|switch|template|this|thread_local|throw|true|try|typedef|typeid|typename|union|unsigned|using|virtual|void|volatile|wchar_t|while|xor|xor_eq)
+INTLIT      (0|[1-9]{DIGIT}*)[uUlL]*
+FLOATLIT    {DIGIT}+\.{DIGIT}*([eE][+-]?{DIGIT}+)?[fFlL]?
+HEXLIT      0[xX]{HEX}+[uUlL]*
+BINLIT      0[bB][01]+[uUlL]*
+OCTALLIT    0[0-7]+[uUlL]*
+IDENTIFIER  {LETTER}({LETTER}|{DIGIT})*
+OPERATOR    ("::"|"->"|"<<="|">>="|"++"|"--"|"<<"|">>"|"<="|">="|"=="|"!="|"&&"|"||"|"+="|"-="|"*="|"/="|"%="|"&="|"|="|"^="|"+"|"-"|"*"|"/"|"%"|"<"|">"|"="|"!"|"&"|"|"|"~"|"^"|"?"|":"|".")
+SEPARATOR   ("("|")"|"{"|"}"|"["|"]"|";"|",")
+STRINGLIT   \"([^\"\\]|\\.)*\"
+CHARLIT     \'([^\'\\]|\\.)\'
+
+%%
+"/*"([^*]|\*+[^*/])*\*+"/" { 
+                dispatch_token(T_BLOCKCOMMENT, "/*...*/"); 
+                int saved_col = col_num - strlen("/*...*/");
+                col_num = saved_col;
+                for(int i=0; i<yyleng; i++) { 
+                    if(yytext[i]=='\n') { line_num++; col_num=1; } 
+                    else { col_num++; } 
+                } 
+            }
+"//"[^\n]* { dispatch_token(T_LINECOMMENT, yytext); }
+
+{KEYWORD}       { dispatch_token(T_KEYWORD, yytext); }
+{FLOATLIT}      { dispatch_token(T_FLOATLIT, yytext); }
+{HEXLIT}        { dispatch_token(T_HEXLIT, yytext); }
+{BINLIT}        { dispatch_token(T_BINLIT, yytext); }
+{OCTALLIT}      { dispatch_token(T_OCTALLIT, yytext); }
+{INTLIT}        { dispatch_token(T_INTLIT, yytext); }
+{STRINGLIT}     { dispatch_token(T_STRINGLIT, yytext); }
+{CHARLIT}       { dispatch_token(T_CHARLIT, yytext); }
+{IDENTIFIER}    { dispatch_token(T_IDENTIFIER, yytext); }
+{OPERATOR}      { dispatch_token(T_OPERATOR, yytext); }
+{SEPARATOR}     { dispatch_token(T_SEPARATOR, yytext); }
+
+\n              { line_num++; col_num = 1; }
+[ \t\r]+        { col_num += yyleng; }
+
+.               { dispatch_token(T_ERROR, yytext); }
+%%
+
+int main() {
+   FILE *in_file = fopen("C:/Users/galax/Documents/Automatas y compiladores/Parcial 2/Lex/codigo.cpp", "r");
+    if (!in_file) {
+        printf("\nERROR: No se encontro el archivo de entrada.\n");
+        system("pause"); /* Evita que la consola se cierre rapido */
+        return 1;
+    }
+
+    FILE *out_file = fopen("C:/Users/galax/Documents/Automatas y compiladores/Parcial 2/Lex/MyScanner.txt", "w");
+    if (!out_file) {
+        printf("\nERROR: No se pudo crear el archivo de salida.\n");
+        fclose(in_file);
+        system("pause");
+        return 1;
+    }
+
+    /* Escribir encabezados */
+    fprintf(out_file, "======================================================================\n");
+    fprintf(out_file, "%-15s | %-20s | %-8s | %-8s\n", "TIPO", "LEXEMA", "LINEA", "COLUMNA");
+    fprintf(out_file, "----------------------------------------------------------------------\n");
+
+    /* Configuracion de Flex */
+    yyin = in_file;
+    current_processor = file_token_processor;
+    processor_context = out_file;
+
+    /* Ejecutar lexer */
+    yylex(); 
+
+    /* Limpieza */
+    fprintf(out_file, "======================================================================\n");
+    fclose(in_file);
+    fclose(out_file);
+    
+    printf("\nYa quedo facilito\n");
+    printf("El resultado se guardo en: MyScanner.txt");
+    
+    system("pause"); 
+    return 0;
+}
