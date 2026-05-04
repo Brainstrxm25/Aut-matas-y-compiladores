@@ -1,0 +1,67 @@
+x = 10;
+y = 20.5;
+
+z = x + y * 2
+
+resultado = z & 5;
+
+if (x > 5) {
+    a = 1;
+    b = 2;
+}
+
+while (x < 50) {
+    x = x + 1;
+    y = (y - 0.5; 
+    z = x * y;
+}
+
+for (i = 0, i < 10, i = i + 1) {
+    j = i * 2;
+}
+
+switch (x) {
+    1:
+        x = x + 10;
+    case 2:
+        x = x + 20;
+    default
+        x = 0;
+}
+
+valor = 100;
+contador = 0;
+
+while (valor > 0 {
+    valor = valor - 1;
+}
+
+if (contador 0) then {
+    final = contador * 2;
+}
+
+variable_@rara = 10;
+
+switch (final) {
+    case 100:
+        estado = 1;
+    case variable: 
+        estado = 2;
+    default:
+        estado = 0;
+}
+
+f = a + b + ;
+
+while (f > 0) {
+    f = f - 1;
+    for (m = 10; ; m = m - 1) {
+        n = m * 3;
+    }
+}
+
+x1 = 10;
+x2 == 20; 
+
+if (x1 < x2) then {
+    estado = 10;
